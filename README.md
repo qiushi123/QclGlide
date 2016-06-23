@@ -26,20 +26,20 @@ Glide加载gif动图，Glide带加载动画（动画可以自定义）
 #二.Glide自定义加载动画
 ###1，在res下创建anim文件夹，在这个文件夹自定义你想要实现的动画，如：slide_in_left.xml
 
-<?xml version="1.0" encoding="utf-8"?>
-<set xmlns:android="http://schemas.android.com/apk/res/android">
-    <translate android:fromXDelta="-50%p" android:toXDelta="0"
-               android:duration="@android:integer/config_mediumAnimTime"/>
-    <alpha android:fromAlpha="0.0" android:toAlpha="1.0"
-           android:duration="@android:integer/config_mediumAnimTime" />
-</set>
+	<?xml version="1.0" encoding="utf-8"?>
+	<set xmlns:android="http://schemas.android.com/apk/res/android">
+	    <translate android:fromXDelta="-50%p" android:toXDelta="0"
+	               android:duration="@android:integer/config_mediumAnimTime"/>
+	    <alpha android:fromAlpha="0.0" android:toAlpha="1.0"
+	           android:duration="@android:integer/config_mediumAnimTime" />
+	</set>
 
 ###使用动画效果：
  Glide.with(this)
-                .load(imageUrl)
-                .animate(R.anim.slide_in_left) // or R.anim.zoom_in
-                .error(R.mipmap.ic_launcher)
-                .into(image);
+   	.load(imageUrl)
+        .animate(R.anim.slide_in_left) // or R.anim.zoom_in
+        .error(R.mipmap.ic_launcher)
+        .into(image);
                 
 
 #三. Glide的使用
