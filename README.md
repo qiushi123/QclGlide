@@ -5,14 +5,16 @@ Glide加载gif动图，Glide带加载动画（动画可以自定义）
 ###上面是一个gif动图，下面是通过glide把图片设成圆形图片
 ![image](https://github.com/qiushi123/QclGlide/blob/master/images/1_meitu_1.png?raw=true)
 
-一. Android-stduio引入类库
+#一. Android-stduio引入类库
 在build.gradle中添加依赖：
+
     compile 'com.github.bumptech.glide:glide:3.7.0'
 
 需要support-v4库的支持，如果你的项目没有support-v4库(项目默认已经添加了)，还需要添加support-v4依赖：
 如果你用的是3.0以后sdk下面的v4包就不用导入了
     compile 'com.android.support:support-v4:23.3.0'
-然后配置混淆规则：
+    
+###然后配置混淆规则：
     -keep public class * implements com.bumptech.glide.module.GlideModule
     -keep public enum com.bumptech.glide.load.resource.bitmap.ImageHeaderParser$** {
       **[] $VALUES;
@@ -21,41 +23,40 @@ Glide加载gif动图，Glide带加载动画（动画可以自定义）
 
 其中第一个混淆规则表明不混淆所有的GlideModule。
 
-二. 集成网络框架OkHttp
+#二.Glide自定义加载动画
+###1，在res下创建anim文件夹，在这个文件夹自定义你想要实现的动画，如：slide_in_left.xml
 
-Glide的网络请求部分可以使用当前最流行的网络请求框架Volley或OkHttp，也可以通过Glide的ModelLoader接口自己写网络请求。 
-Glide默认使用HttpUrlConnection进行网络请求，为了让APP保持一致的网络请求形式，可以让Glide使用我们指定的网络请求形式请求网络资源，
-这里我们选OkHttp (具有支持HTTP/2、利用连接池技术减少请求延迟、缓存响应结果等等优点)，需要添加一个集成库：
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+    <translate android:fromXDelta="-50%p" android:toXDelta="0"
+               android:duration="@android:integer/config_mediumAnimTime"/>
+    <alpha android:fromAlpha="0.0" android:toAlpha="1.0"
+           android:duration="@android:integer/config_mediumAnimTime" />
+</set>
 
-    //OkHttp 2.x
-    //compile 'com.github.bumptech.glide:okhttp-integration:1.4.0@aar'
-    //compile 'com.squareup.okhttp:okhttp:2.7.5'
+###使用动画效果：
+ Glide.with(this)
+                .load(imageUrl)
+                .animate(R.anim.slide_in_left) // or R.anim.zoom_in
+                .error(R.mipmap.ic_launcher)
+                .into(image);
+                
 
-    //OkHttp 3.x
-    compile 'com.github.bumptech.glide:okhttp3-integration:1.4.0@aar'
-    compile 'com.squareup.okhttp3:okhttp:3.2.0'
+#三. Glide的使用
+##简单使用：
 
-注意： 
-1. OkHttp 2.x和OkHttp 3.x需使用不同的集成库。 
-2. Gradle会自动将OkHttpGlideModule合并到应用的manifest文件中。 
-3. 如果你没有对所有的GlideModule配置混淆规则(即没有使用-keep public class * implements com.bumptech.glide.module.GlideModule)，
-则需要把OkHttp的GlideModule进行防混淆配置：
-
--keep class com.bumptech.glide.integration.okhttp.OkHttpGlideModule
-
-三. 使用
-简单使用：
         Glide
            .with(this)
            .load("http://inthecheesefactory.com/uploads/source/nestedfragment/fragments.png")
            .into(imageView);
-
-Glide.with()
+           
+	Glide.with()
 	with(Context context). 使用Application上下文，Glide请求将不受Activity/Fragment生命周期控制。
 	with(Activity activity).使用Activity作为上下文，Glide的请求会受到Activity生命周期控制。
 	with(FragmentActivity activity).Glide的请求会受到FragmentActivity生命周期控制。
 	with(android.app.Fragment fragment).Glide的请求会受到Fragment 生命周期控制。
 	with(android.support.v4.app.Fragment fragment).Glide的请求会受到Fragment生命周期控制。
+	
 返回关联了相应上下文的RequestManager实例。
 
 requestManager.load()
@@ -68,11 +69,11 @@ Glide基本可以load任何可以拿到的媒体资源，如：
 	load ContentProvider资源：load("content://media/external/images/media/139469") 
 	load http资源：load("http://img.my.csdn.net/uploads/201508/05/1438760757_3588.jpg") 
 	load https资源：load("https://img.alicdn.com/tps/TB1uyhoMpXXXXcLXVXXXXXXXXXX-476-538.jpg_240x5000q50.jpg_.webp") 
-当然，load不限于String类型，还可以： 
+		当然，load不限于String类型，还可以： 
 	load(Uri uri)，load(File file)，load(Integer resourceId)，load(URL url)，load(byte[] model)，
 	load(T model)，loadFromMediaStore(Uri uri)。
 	load的资源也可以是本地视频，如果想要load网络视频或更高级的操作可以使用VideoView等其它控件完成。 
-	而且可以使用自己的ModelLoader进行资源加载： 
+		而且可以使用自己的ModelLoader进行资源加载： 
 	using(ModelLoader<A, T> modelLoader, Class<T> dataClass)，using(final StreamModelLoader<T> modelLoader)，
 	using(StreamByteArrayLoader modelLoader)，using(final FileDescriptorModelLoader<T> modelLoader)。
 返回GenericRequestBuilder实例。
@@ -85,7 +86,8 @@ GenericRequestBuilder<ModelType,DataType,ResourceType,TranscodeType>是最顶层
 所以这个ModelType就是String。DataType是指ModelLoader提供的，可以被ResourceDecoder解码的数据类型。
 ResourceType是指将要加载的resource类型。TranscodeType是指已解码的资源将要被转成的资源类型。
 
-常用设置（比如动画，缓存等）
+##常用设置（比如动画，缓存等）
+
 	thumbnail(float sizeMultiplier). 请求给定系数的缩略图。如果缩略图比全尺寸图先加载完，就显示缩略图，
 			否则就不显示。系数sizeMultiplier必须在(0,1)之间，可以递归调用该方法。
 	sizeMultiplier(float sizeMultiplier). 在加载资源之前给Target大小设置系数。
@@ -123,29 +125,30 @@ ResourceType是指将要加载的resource类型。TranscodeType是指已解码�
 	asGif().把资源作为GifDrawable对待。如果资源不是gif动画将会失败，会回调.error()。
 	
 	
-技巧：
+##技巧：
 
-禁止内存缓存：
+###禁止内存缓存：
     .skipMemoryCache(true)
 
-清除内存缓存：
+###清除内存缓存：
     // 必须在UI线程中调用
     Glide.get(context).clearMemory();
 
-禁止磁盘缓存：
+###禁止磁盘缓存：
 
    .diskCacheStrategy(DiskCacheStrategy.NONE)
 
-清除磁盘缓存：
+###清除磁盘缓存：
 
    // 必须在后台线程中调用，建议同时clearMemory()
    Glide.get(applicationContext).clearDiskCache();
 
-获取缓存大小：
+###获取缓存大小：
 
    new GetDiskCacheSizeTask(textView).execute(new File(getCacheDir(), DiskCache.Factory.DEFAULT_DISK_CACHE_DIR));
 
 GetDiskCacheSizeTask源码   
+
 	class GetDiskCacheSizeTask extends AsyncTask<File, Long, Long> {
 	private final TextView resultView;
 
@@ -202,7 +205,7 @@ GetDiskCacheSizeTask源码
 	}
 
 
-指定资源的优先加载顺序：
+###指定资源的优先加载顺序：
     //优先加载
     Glide
         .with(context)
@@ -216,7 +219,7 @@ GetDiskCacheSizeTask源码
         .priority(Priority.LOW)
         .into(imageViewItem);
 
-先显示缩略图，再显示原图：
+###先显示缩略图，再显示原图：
     //用原图的1/10作为缩略图
     Glide
         .with(this)
@@ -234,11 +237,11 @@ GetDiskCacheSizeTask源码
 
 		
 ================================================================================================================		
-Glide可以对图片进行裁剪、模糊、滤镜等处理： 
+#Glide可以对图片进行裁剪、模糊、滤镜等处理： 
 	推荐使用独立的图片处理库：wasabeef/glide-transformations，使用也很简单：
     compile 'jp.wasabeef:glide-transformations:2.0.0'
 
-之后我们就可以使用GenericRequestBuilder或其子类的transform()或bitmapTransform()方法设置图片转换了：
+	之后我们就可以使用GenericRequestBuilder或其子类的transform()或bitmapTransform()方法设置图片转换了：
 
     //圆形裁剪
     Glide.with(this)
@@ -289,7 +292,7 @@ private static class MyTransformation extends BitmapTransformation {
 
 
 使用时只需使用transform()或bitmapTransform()方法即可：
-
+	
 	Glide.with(yourFragment)
 		.load(yourUrl)
 		.asBitmap()
@@ -301,7 +304,7 @@ private static class MyTransformation extends BitmapTransformation {
 从Bitmap池中拿一个Bitmap，用这个Bitmap生成一个Canvas, 然后在这个Canvas上画初始的Bitmap并使用Matrix、Paint、
 或者Shader处理这张图片。 
 
-为了有效并正确重用Bitmap需要遵循以下三条准则：
+#为了有效并正确重用Bitmap需要遵循以下三条准则：
 	1，永远不要把transform()传给你的原始resource或原始Bitmap给recycle()了，更不要放回BitmapPool，因为这些都自动完成了。
 		值得注意的是，任何从BitmapPool取出的用于自定义图片变换的辅助Bitmap，
 		如果不经过transform()方法返回，就必须主动放回BitmapPool或者调用recycle()回收。
@@ -342,8 +345,7 @@ private static class MyTransformation extends BitmapTransformation {
         }
     }
 
-
-也可以直接实现Transformation接口，进行更灵活的图片处理，如进行简单地圆角处理：
+##也可以直接实现Transformation接口，进行更灵活的图片处理，如进行简单地圆角处理：
 
 public class RoundedCornersTransformation  implements Transformation<Bitmap> {
 
@@ -386,7 +388,7 @@ public class RoundedCornersTransformation  implements Transformation<Bitmap> {
 }
 
 
-对请求状态进行监听：
+##对请求状态进行监听：
 
 public class MainActivity extends AppCompatActivity {
 
@@ -413,6 +415,7 @@ public class MainActivity extends AppCompatActivity {
 * @param <A> model类型
 * @param <B> resource类型
 */
+
 public class LoggingListener<A, B> implements RequestListener<A, B> {
 private final int level;
 private final String name;
@@ -540,14 +543,25 @@ private NoOpRequestListener() {
 需要自定义ModelLoader和DataFetcher，具体请详见我的Git：https://github.com/shangmingchao/ProgressGlide，欢迎Star啊，
 不过没有太大必要告诉用户图片加载的进度（sjudd和TWiStErRob他们说的）。同时也可以看一下TWiStErRob大神的实现（自备梯子哈~.~）。
 
+#集成网络框架OkHttp
 
+Glide的网络请求部分可以使用当前最流行的网络请求框架Volley或OkHttp，也可以通过Glide的ModelLoader接口自己写网络请求。 
+Glide默认使用HttpUrlConnection进行网络请求，为了让APP保持一致的网络请求形式，可以让Glide使用我们指定的网络请求形式请求网络资源，
+这里我们选OkHttp (具有支持HTTP/2、利用连接池技术减少请求延迟、缓存响应结果等等优点)，需要添加一个集成库：
 
+    //OkHttp 2.x
+    //compile 'com.github.bumptech.glide:okhttp-integration:1.4.0@aar'
+    //compile 'com.squareup.okhttp:okhttp:2.7.5'
 
+    //OkHttp 3.x
+    compile 'com.github.bumptech.glide:okhttp3-integration:1.4.0@aar'
+    compile 'com.squareup.okhttp3:okhttp:3.2.0'
 
+注意： 
+1. OkHttp 2.x和OkHttp 3.x需使用不同的集成库。 
+2. Gradle会自动将OkHttpGlideModule合并到应用的manifest文件中。 
+3. 如果你没有对所有的GlideModule配置混淆规则(即没有使用-keep public class * implements com.bumptech.glide.module.GlideModule)，
+则需要把OkHttp的GlideModule进行防混淆配置：
 
-
-
-
-
-+
+-keep class com.bumptech.glide.integration.okhttp.OkHttpGlideModule
 
